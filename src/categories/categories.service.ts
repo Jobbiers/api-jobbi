@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ResponseHandler } from 'src/utils/ResponseHandler';
+import { CategoryEntity } from './entities/category.entity';
+import DatabaseService from 'src/config/databaseClient';
+import { categoriesQueries } from './queries/query';
+import { FindCategoryParamsDto } from './dto/find-category.dto';
 
 @Injectable()
 export class CategoriesService {
-  create(createCategoryDto: CreateCategoryDto) {
+  async create(newCategory: CreateCategoryDto) {
     try {
-      const category = {};
-      // await db.create(CreateCategoryDto, createCategoryDto);
+      const con = await DatabaseService.getConnection();
+      const createdCategory = con.manager.create(CategoryEntity, newCategory);
+      await con.manager.save(createdCategory);
       return ResponseHandler.success({
-        data: category,
+        data: createdCategory,
         message: 'Category created successfully',
         status: 200,
       });
@@ -22,11 +26,10 @@ export class CategoriesService {
       });
     }
   }
-
-  findAll() {
+  async findAll(filters: FindCategoryParamsDto) {
     try {
-      const categories = [];
-      // await db.findAll(CreateCategoryDto, createCategoryDto);
+      const con = await DatabaseService.getConnection();
+      const categories = await con.query(categoriesQueries.findAll(filters));
       return ResponseHandler.success({
         data: categories,
         message: 'Categories searched successfully',
@@ -41,10 +44,13 @@ export class CategoriesService {
     }
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     try {
-      const category = {};
-      // const category = await db.finByPk(CreateCategoryDto, createCategoryDto);
+      const con = await DatabaseService.getConnection();
+      const category = await con.manager.findOne(CategoryEntity, { where: { id } });
+      if (!category) {
+        throw new Error('Category not found');
+      }
       return ResponseHandler.success({
         data: category,
         message: 'Category searched successfully',
@@ -59,10 +65,15 @@ export class CategoriesService {
     }
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
+  async update(id: number, updateCategory: CreateCategoryDto) {
     try {
-      const category = {};
-      // const category = await db.updateByPk(CreateCategoryDto, createCategoryDto);
+      const con = await DatabaseService.getConnection();
+      const category = await con.manager.findOne(CategoryEntity, { where: { id } });
+      if (!category) {
+        throw new Error('Category not found');
+      }
+      Object.assign(category, updateCategory);
+      await con.manager.save(category);
       return ResponseHandler.success({
         data: category,
         message: 'Category updated successfully',
@@ -77,10 +88,11 @@ export class CategoriesService {
     }
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     try {
-      const category = {};
-      // const category = await db.removeByPk(CreateCategoryDto, createCategoryDto);
+      const con = await DatabaseService.getConnection();
+      const category = await con.manager.findOne(CategoryEntity, { where: { id } });
+      const categoryRemoved = await con.manager.delete(CategoryEntity, { id });
       return ResponseHandler.success({
         data: category,
         message: 'Category removed successfully',
@@ -94,4 +106,27 @@ export class CategoriesService {
       });
     }
   }
+  async createAll() {
+  try {
+    const con = await DatabaseService.getConnection();
+    const categoriesPromises = categoriesMock.map( async (category) => {
+      const createdCategory = con.manager.create(CategoryEntity, { name: category.name });
+      await con.manager.save(createdCategory);
+    });
+    const categoriesCreated = await Promise.all(categoriesPromises);
+    return ResponseHandler.success({
+      data: categoriesCreated,
+      message: 'All categories created successfully',
+      status: 200,
+    });
+  } catch (error) {
+    return ResponseHandler.error({
+      error: error,
+      message: 'Ups...',
+      status: 500,
+    });
+  }
+  }
 }
+
+const categoriesMock = [];

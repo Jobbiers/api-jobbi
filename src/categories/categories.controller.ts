@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -9,12 +17,17 @@ export class CategoriesController {
 
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
-    this.categoriesService.create(createCategoryDto);
+    return this.categoriesService.create(createCategoryDto);
+  }
+
+  @Post('/createAll')
+  createAll() {
+    return this.categoriesService.createAll();
   }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  findAll(@Query('limit') limit: string, @Query('page') page: string) {
+    return this.categoriesService.findAll({ limit: +limit, page: +page });
   }
 
   @Get(':id')
@@ -23,8 +36,8 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoriesService.update(+id, updateCategoryDto);
+  update(@Param('id') id: string, @Body() updateCategory: CreateCategoryDto) {
+    return this.categoriesService.update(+id, updateCategory);
   }
 
   @Delete(':id')

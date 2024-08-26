@@ -1,15 +1,30 @@
-import { IsString, IsArray, ValidateNested, IsOptional } from 'class-validator';
+import { IsString, IsArray, IsNotEmpty } from 'class-validator';
 
 export class CreateCategoryDto {
     @IsString()
+    @IsNotEmpty()
     name: string;
-    @IsArray()
-    @IsOptional()
-    @ValidateNested({ each: true })
-    subCategory?: Category[];
 }
 
 export interface Category {
+    id: number;
     name: string;
     subCategory?: Category[];
-  }
+}
+
+export class FavCategoriesDto {
+    @IsArray()
+    categoriesId: number[];
+
+    @IsString()
+    userId: string;
+
+    @IsString()
+    userName: string;
+
+    @IsString()
+    creationDate: string;
+
+    @IsString()
+    lastUpdate: string;
+}

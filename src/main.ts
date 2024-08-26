@@ -2,12 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import DatabaseService from './config/databaseClient';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   // Configuración de CORS
-  app.enableCors();
+  app.enableCors({
+    origin: "*",
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
+  });
   
   // Configuración de validación global
   app.useGlobalPipes(new ValidationPipe());
@@ -20,9 +25,10 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+  await DatabaseService.init();
   
   // Iniciar el servidor
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3008;
   await app.listen(port);
   console.log(`Aplicación corriendo en: http://localhost:${port}`);
 }
