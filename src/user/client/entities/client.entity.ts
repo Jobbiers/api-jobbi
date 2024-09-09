@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { OrderEntity } from 'src/orders/entities/order.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
@@ -17,18 +17,25 @@ export class UserClientEntity {
   @IsNotEmpty()
   lastName: string;
 
-  @Column({type: "string", default: null})
-  adress: string;
+  @Column({nullable: true, default: null})
+  @IsString()
+  @IsOptional()
+  address?: string;
 
   @Column()
   @IsNotEmpty()
   @IsString()
   email: string;
 
-  @Column()
-  @IsNotEmpty()
+  @Column({nullable: true, default: null})
+  @IsOptional()
+  @IsNumber()
+  phone: number;
+
+  @Column({nullable: true, default: null})
+  @IsOptional()
   @IsString()
-  phone: string;
+  expoToken: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

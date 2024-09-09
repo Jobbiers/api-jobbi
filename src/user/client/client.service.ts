@@ -1,15 +1,95 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, LoginUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import DatabaseService from 'src/config/databaseClient';
+import { UserClientEntity } from './entities/client.entity';
+import { ResponseHandler } from 'src/utils/ResponseHandler';
+import admin from 'firebase-admin';
 
 @Injectable()
 export class UserClientService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async createWithGoogle(newUser: CreateUserDto) {
+    try {      
+      const con = await DatabaseService.getConnection();
+      const createdUser = con.manager.create(UserClientEntity, newUser);
+      admin.auth().createUser({
+        email: newUser.email,
+        password: newUser.password,
+        displayName: `${newUser.name} ${newUser.lastName}`,
+      })
+        .then((userRecord) => {
+          console.log('User created successfully:', userRecord.uid);
+          con.manager.save(createdUser).catch(async (error) => {
+            await admin.auth().deleteUser(userRecord.uid);
+            throw new Error(
+              `Error saving user to database: ${JSON.stringify(error)}`,
+            );
+          });
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+          throw new Error(errorMessage);
+        });
+      return ResponseHandler.success({
+        message: 'User created successfully',
+        status: 200,
+      });
+    } catch (error) {
+      return ResponseHandler.error({
+        error: error,
+        message: "We've some problems creating the user...",
+        status: 500,
+      });
+    }
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async create(newUser: CreateUserDto) {
+    try {
+      const con = await DatabaseService.getConnection();
+      const createdUser = con.manager.create(UserClientEntity, newUser);
+      con.manager.save(createdUser);
+      return ResponseHandler.success({
+        message: 'User created successfully',
+        status: 200,
+      });
+    } catch (error) {
+      return ResponseHandler.error({
+        error: error,
+        message: "We've some problems creating the user...",
+        status: 500,
+      });
+    }
+  }
+
+  async login(userCredentials: LoginUserDto) {
+    try {
+      const userFb = await admin.auth().getUserByEmail(userCredentials.user).catch();
+      if (userFb) {
+        const con = await DatabaseService.getConnection();
+        const dbUser = con.manager.findOneBy(UserClientEntity, {
+          email: userCredentials.user,
+        });
+        if (dbUser) {
+          return ResponseHandler.success({
+            message: 'Login successful',
+            status: 200,
+            data: dbUser,
+          });
+        } else {
+          const createdUser = createDbUser(userCredentials);
+          if(createdUser) return
+          throw new Error('Problems creating user in database');  
+        }
+      } else {
+        throw new Error('User not found in database');
+      }
+    } catch (error) {
+      return ResponseHandler.error({
+        error: error,
+        message: error.message,
+        status: 500,
+      });
+    }
   }
 
   findOne(id: number) {
@@ -24,3 +104,19 @@ export class UserClientService {
     return `This action removes a #${id} user`;
   }
 }
+
+const createDbUser = async (userCredentials: LoginUserDto) => {
+  try {
+    const name = userCredentials.user.split('@')[0];
+    const validatedUser = new UserClientEntity();
+    validatedUser.name = name;
+    validatedUser.lastName = `${Math.floor(Math.random() * (9000 - 1000 + 1)) + 1000}`;
+    validatedUser.email = userCredentials.user;
+    const con = await DatabaseService.getConnection();
+    const createdUser = con.manager.create(UserClientEntity, validatedUser);
+    con.manager.save(createdUser);
+    return {data: createdUser};
+  } catch (error) {
+    return {data: null};
+  }
+};

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { OrderEntity } from 'src/orders/entities/order.entity';
 import { BusinessEntity } from 'src/business/entities/business.entity';
 
@@ -18,7 +18,8 @@ export class ProfessionalEntity {
   @IsNotEmpty()
   lastName: string;
 
-  @Column({type: "string", default: null})
+  @Column()
+  @IsString()
   specialization: string;
 
   @Column()
