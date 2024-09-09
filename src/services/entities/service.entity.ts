@@ -19,7 +19,7 @@ export class ServiceEntity {
   @IsNotEmpty()
   description: string;
 
-  @Column()
+  @Column({nullable: true, default: null})
   @IsArray()
   @IsOptional()
   photos: string

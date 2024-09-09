@@ -30,8 +30,10 @@ export class BusinessEntity {
   @IsNotEmpty()
   openTo: Date;
   
-  @Column({type: "string", default: null})
-  address: string;
+  @Column({nullable: true, default: null})
+  @IsString()
+  @IsOptional()
+  adress?: string;
 
   @Column()
   @IsNotEmpty()
@@ -43,7 +45,7 @@ export class BusinessEntity {
   @IsString()
   phone: string;
 
-  @Column()
+  @Column({nullable: true, default: null})
   @IsOptional()
   photos: string
 

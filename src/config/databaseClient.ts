@@ -1,6 +1,5 @@
 import { DataSource } from 'typeorm';
 import { join } from 'path';
-// import { process.env.DB_HOST, process.env.DB_NAME, process.env.DB_PASS, process.env.DB_PORT, process.env.DB_USER, NODE_ENV } from '../config'
 
 let _connection: DataSource | null = null;
 

@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { UserClientService } from './client.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, LoginUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
@@ -8,13 +8,19 @@ export class UserClientController {
   constructor(private readonly userService: UserClientService) {}
 
   @Post()
+  createWithGoogle(@Body() createUserDto: CreateUserDto) {
+    return this.userService.createWithGoogle(createUserDto);
+  }
+
+  @Post('/googleUser')
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Post('/login')
+  login(@Body() user: LoginUserDto) {
+    console.log('first', user)
+    return this.userService.login(user);
   }
 
   @Get(':id')
