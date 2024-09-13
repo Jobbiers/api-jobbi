@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { UserClientService } from './client.service';
 import { CreateUserDto, LoginUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FirebaseAuthGuard } from 'src/guards/auth.guard';
 
 @Controller('user')
 export class UserClientController {
@@ -13,14 +14,22 @@ export class UserClientController {
   }
 
   @Post('/googleUser')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  create(@Body() createUser: CreateUserDto) {
+    const createUserParsed: CreateUserDto = {
+      ...createUser,
+      email: createUser.email.toLowerCase()
+    }
+    return this.userService.create(createUser);
   }
 
+  @UseGuards(FirebaseAuthGuard)
   @Post('/login')
   login(@Body() user: LoginUserDto) {
-    console.log('first', user)
-    return this.userService.login(user);
+    const userParsed: LoginUserDto = {
+      email: user.email.toLowerCase(),
+      password: user.password,
+    }
+    return this.userService.login(userParsed);
   }
 
   @Get(':id')

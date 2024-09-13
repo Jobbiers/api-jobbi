@@ -16,9 +16,18 @@ import { OrderStateModule } from './order-state/order-state.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-    envFilePath: ['.env.local', '.env'],
-    isGlobal: true,
-  }), CategoriesModule, SubCategoryModule, UserClientModule, ProfessionalModule, OrdersModule, BusinessModule, ServicesModule, OrderStateModule],
+      envFilePath: ['.env.local', '.env'],
+      isGlobal: true,
+    }),
+    CategoriesModule,
+    SubCategoryModule,
+    UserClientModule,
+    ProfessionalModule,
+    OrdersModule,
+    BusinessModule,
+    ServicesModule,
+    OrderStateModule,
+  ],
   controllers: [AppController, CategoriesController],
   providers: [AppService, CategoriesService],
 })

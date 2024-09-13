@@ -16,12 +16,7 @@ async function bootstrap() {
   });
   
   // Configuración de validación global con opciones
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    validateCustomDecorators: true,
-    disableErrorMessages: false,
-    exceptionFactory: (errors) => new Error(`Validation failed: ${errors.map(error => error.constraints).join(', ')}`)
-  }));
+  app.useGlobalPipes(new ValidationPipe());
 
   // Configuración de Swagger
   const config = new DocumentBuilder()
