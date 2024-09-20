@@ -3,6 +3,7 @@ import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { OrderEntity } from '../../orders/entities/order.entity';
 import { BusinessEntity } from 'src/business/entities/business.entity';
 import { CategoryEntity } from 'src/categories/entities/category.entity';
+import { RatingEntity } from 'src/ratings/entities/rating.entity';
 
 @Entity()
 export class ServiceEntity {
@@ -32,4 +33,7 @@ export class ServiceEntity {
 
   @OneToMany(() => ServiceEntity, service => service.orders)
   orders: OrderEntity;
+
+  @OneToMany(() => ServiceEntity, service => service.ratings)
+  ratings: RatingEntity[];
 }
